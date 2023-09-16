@@ -1,35 +1,64 @@
 # Odyssey Lift-off II: Resolvers
 
-Welcome to the companion app of Odyssey Lift-off II! You can [find the course lessons and instructions on Odyssey](https://odyssey.apollographql.com/lift-off-part2), Apollo's learning platform.
+# installing codeGen
 
-You can [preview the completed demo app here](https://lift-off-client-demo.netlify.app/).
+`npm install -D @graphql-codegen/cli @graphql-codegen/typescript @graphql-codegen/typescript-resolvers`
 
-## How to use this repo
+```json
+"scripts": {
+    "compile": "tsc",
+    "dev": "ts-node-dev --respawn ./src/index.ts",
+    "start": "npm run compile && nodemon ./dist/index.js",
+    "generate": "graphql-codegen"
+  },
+```
 
-The course will walk you step by step on how to implement the features you see in the demo app. This codebase is the starting point of your journey!
+### 3. create codegen.ts
 
-There are 3 main folders:
+create a file called codegen.ts in the root of the server folder.
 
-- `server`: The starting point of our GraphQL server.
-- `client`: The starting point of our React application.
-- `final`: The final stage of both the server and client folders, with all of the steps and code completed!
+```ts
+import type { CodegenConfig } from "@graphql-codegen/cli";
 
-To get started:
+const config: CodegenConfig = {
+  schema: "./src/schema.ts",
+  generates: {
+    "./src/types.ts": {
+      plugins: ["typescript", "typescript-resolvers"],
+    },
+  },
+};
 
-1. Navigate to the `server` folder.
-1. Run `npm install`.
-1. Run `npm start`.
+export default config;
+```
 
-This will start the GraphQL API server.
+### 4. Add Resolvers type to resolvers
 
-In another Terminal window,
+To use this type, let's open up the resolvers.ts file.
 
-1. Navigate to the `client` folder.
-1. Run `npm install`.
-1. Run `npm start`.
+At the top, we can import the Resolvers type from the types file.
 
-This will open up `localhost:3000` in your web browser.
+```ts
+import { Resolvers } from "./types";
 
-## Getting Help
+export const resolvers: Resolvers = {
+  Query: {
+    tracksForHome: (_, __, { dataSources }) => {
+      return dataSources.trackAPI.getTracksForHome();
+    },
+  },
+  Track: {
+    author: ({ authorId }, _, { dataSources }) => {
+      return dataSources.trackAPI.getAuthor(authorId);
+    },
+  },
+};
+```
 
-For any issues or problems concerning the course content, please refer to the [Odyssey topic in our community forums](https://community.apollographql.com/tags/c/help/6/odyssey).
+This doesn't take care of all of our errors immediately; for one thing, we'll probably see a red squiggly appear under authorId in our Track.author resolver. Secondly, if we hover over any of our resolvers' dataSources value, we'll see that it still has an implicit type of any!
+
+Let's take care of the dataSources issue first. If we review the Resolvers type, we'll see that it's actually a generic that accepts a type variable called ContextType.
+
+## Resources
+
+[CodeGen on the server for TS](https://www.apollographql.com/tutorials/lift-off-part2/08-server-codegen)

@@ -1,3 +1,0 @@
-# Catstronauts - client
-
-The final state of the `client` code after finishing the Odyssey Lift-off II course.

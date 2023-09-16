@@ -5,7 +5,6 @@ import { gql } from "../__generated__";
 import { useQuery } from "@apollo/client";
 import TrackCard from "../containers/track-card";
 
-/** TRACKS query to retrieve all tracks */
 export const TRACKS = gql(`
   query GetTracks {
     tracksForHome {
@@ -23,10 +22,6 @@ export const TRACKS = gql(`
   }
 `);
 
-/**
- * Tracks Page is the Catstronauts home page.
- * We display a grid of tracks fetched with useQuery with the TRACKS query
- */
 const Tracks = () => {
   const { loading, error, data } = useQuery(TRACKS);
 
