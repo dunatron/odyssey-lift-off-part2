@@ -59,6 +59,72 @@ This doesn't take care of all of our errors immediately; for one thing, we'll pr
 
 Let's take care of the dataSources issue first. If we review the Resolvers type, we'll see that it's actually a generic that accepts a type variable called ContextType.
 
+### 5 create models.ts
+
+create a models.ts file in the root directory
+
+```ts
+export type TrackModel = {
+  id: string;
+  title: string;
+  authorId: string;
+  thumbnail: string;
+  length: number;
+  modulesCount: number;
+};
+
+export type AuthorModel = {
+  id: string;
+  name: string;
+  photo: string;
+};
+```
+
+updated our codegen file
+
+```ts
+import type { CodegenConfig } from "@graphql-codegen/cli";
+
+const config: CodegenConfig = {
+  schema: "./src/schema.ts",
+  generates: {
+    "./src/types.ts": {
+      plugins: ["typescript", "typescript-resolvers"],
+      config: {
+        contextType: "./context#DataSourceContext",
+        mappers: {
+          Track: "./models#TrackModel",
+          Author: "./models#AuthorModel",
+        },
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+run codegen again.
+
+This has an added benefit in that we can make our dataSources have types
+
+```ts
+import { RESTDataSource } from "@apollo/datasource-rest";
+import { TrackModel, AuthorModel } from "../models";
+
+export class TrackAPI extends RESTDataSource {
+  baseURL = "https://odyssey-lift-off-rest-api.herokuapp.com/";
+
+  getTracksForHome() {
+    return this.get<TrackModel[]>("tracks");
+  }
+
+  getAuthor(authorId: string) {
+    return this.get<AuthorModel>(`author/${authorId}`);
+  }
+}
+```
+
 ## Resources
 
 [CodeGen on the server for TS](https://www.apollographql.com/tutorials/lift-off-part2/08-server-codegen)
